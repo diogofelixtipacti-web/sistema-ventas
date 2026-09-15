@@ -273,5 +273,4 @@ elif opcion == "Ver Reporte":
     with col2:
         st.metric("Valor del Stock", f"S/. {valor_total_stock:.2f}")
         st.metric("Total Vendido", f"S/. {total_dinero_ventas:.2f}")
-
-Usa el código con precaución.st.subheader("Historial de Transacciones")if len(st.session_state.ventas) == 0:st.caption("Aún no se registran ventas en el sistema.")else:st.dataframe(st.session_state.ventas, use_container_width=True)
+st.subheader("Historial de Transacciones")if len(st.session_state.ventas) == 0:st.caption("Aún no se registran ventas en el sistema.")else:st.dataframe(st.session_state.ventas, use_container_width=True)
