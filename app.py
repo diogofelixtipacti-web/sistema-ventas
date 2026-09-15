@@ -1,445 +1,277 @@
 import os
+import streamlit as st
 
+# Configuración de los archivos de texto (se guardan en el servidor en la nube)
 archivo_inv = "productos.txt"
 archivo_ven = "registro_ventas.txt"
 
 
 def preparar_archivos():
-
     if not os.path.exists(archivo_inv):
         with open(archivo_inv, "w") as archivo:
             archivo.write("")
-
     if not os.path.exists(archivo_ven):
         with open(archivo_ven, "w") as archivo:
             archivo.write("")
 
 
 def leer_inventario():
-
     inventario = {}
-
     try:
-
+        if not os.path.exists(archivo_inv):
+            return inventario
         with open(archivo_inv, "r") as archivo:
             datos = archivo.readlines()
-
         posicion = 0
-
         while posicion + 3 < len(datos):
-
             codigo = int(datos[posicion].strip())
             nombre = datos[posicion + 1].strip()
             precio = float(datos[posicion + 2].strip())
             cantidad = int(datos[posicion + 3].strip())
-
             inventario[codigo] = {
                 "nombre": nombre,
                 "precio": precio,
-                "stock": cantidad
+                "stock": cantidad,
             }
-
             posicion += 4
-
-    except FileNotFoundError:
-
-        print("No se encontró el archivo.")
-
-    except ValueError:
-
-        print("Se encontró un dato incorrecto.")
-
-    else:
-
-        print("Productos cargados.")
-
-    finally:
-
-        print("Proceso de lectura terminado.")
-
+    except Exception:
+        pass
     return inventario
 
 
 def leer_ventas():
-
     ventas = []
-
     try:
-
+        if not os.path.exists(archivo_ven):
+            return ventas
         with open(archivo_ven, "r") as archivo:
             datos = archivo.readlines()
-
         posicion = 0
-
         while posicion + 4 < len(datos):
-
             venta = {
                 "codigo": int(datos[posicion].strip()),
                 "producto": datos[posicion + 1].strip(),
                 "cantidad": int(datos[posicion + 2].strip()),
                 "descuento": float(datos[posicion + 3].strip()),
-                "total": float(datos[posicion + 4].strip())
+                "total": float(datos[posicion + 4].strip()),
             }
-
             ventas.append(venta)
-
             posicion += 5
-
-    except FileNotFoundError:
-
-        print("Todavía no existe un historial de ventas.")
-
-    except ValueError:
-
-        print("Hay información incorrecta en ventas.")
-
+    except Exception:
+        pass
     return ventas
 
 
 def guardar_inventario(inventario):
-
     try:
-
         with open(archivo_inv, "w") as archivo:
-
             for codigo in inventario:
-
                 archivo.write(str(codigo) + "\n")
                 archivo.write(inventario[codigo]["nombre"] + "\n")
                 archivo.write(str(inventario[codigo]["precio"]) + "\n")
                 archivo.write(str(inventario[codigo]["stock"]) + "\n")
-
     except OSError:
-
-        print("No se pudo guardar los productos.")
-
-
-def registrar_producto(inventario):
-
-    print("\nREGISTRO DE PRODUCTO")
-
-    try:
-
-        codigo = int(input("Código: ").strip())
-
-        if codigo <= 0:
-
-            print("El código debe ser mayor que cero.")
-
-        elif codigo in inventario:
-
-            print("Ese código ya existe.")
-
-        else:
-
-            nombre = input("Nombre: ").strip().capitalize()
-
-            precio = float(input("Precio: S/. ").strip())
-
-            stock = int(input("Cantidad disponible: ").strip())
-
-            if nombre == "":
-
-                print("Debe colocar un nombre.")
-
-            elif precio < 0 or stock < 0:
-
-                print("Precio y stock no pueden ser negativos.")
-
-            else:
-
-                inventario[codigo] = {
-                    "nombre": nombre,
-                    "precio": precio,
-                    "stock": stock
-                }
-
-                guardar_inventario(inventario)
-
-                print("Producto guardado.")
-
-    except ValueError:
-
-        print("Ingrese correctamente los datos.")
-
-
-def buscar_producto(inventario):
-
-    print("\nBÚSQUEDA DE PRODUCTO")
-
-    try:
-
-        codigo = int(input("Código del producto: ").strip())
-
-        if codigo in inventario:
-
-            producto = inventario[codigo]
-
-            print("\nCódigo:", codigo)
-            print("Producto:", producto["nombre"])
-            print("Precio: S/.", producto["precio"])
-            print("Stock:", producto["stock"])
-
-        else:
-
-            print("No se encontró ese producto.")
-
-    except ValueError:
-
-        print("El código debe ser un número.")
-
-
-def modificar_producto(inventario):
-
-    print("\nMODIFICAR PRODUCTO")
-
-    try:
-
-        codigo = int(input("Código del producto: ").strip())
-
-        if codigo in inventario:
-
-            print("Producto actual:", inventario[codigo]["nombre"])
-
-            nombre = input("Nuevo nombre: ").strip().capitalize()
-            precio = float(input("Nuevo precio: S/. ").strip())
-            stock = int(input("Nuevo stock: ").strip())
-
-            if nombre == "":
-
-                print("El nombre está vacío.")
-
-            elif precio < 0 or stock < 0:
-
-                print("No se permiten valores negativos.")
-
-            else:
-
-                inventario[codigo]["nombre"] = nombre
-                inventario[codigo]["precio"] = precio
-                inventario[codigo]["stock"] = stock
-
-                guardar_inventario(inventario)
-
-                print("Producto modificado.")
-
-        else:
-
-            print("El producto no existe.")
-
-    except ValueError:
-
-        print("Datos incorrectos.")
-
-
-def mostrar_productos(inventario):
-
-    print("\nLISTA DE PRODUCTOS")
-
-    if len(inventario) == 0:
-
-        print("No hay productos.")
-
-    else:
-
-        for codigo in inventario:
-
-            print("-----------------------")
-            print("Código:", codigo)
-            print("Nombre:", inventario[codigo]["nombre"])
-            print("Precio: S/.", inventario[codigo]["precio"])
-            print("Stock:", inventario[codigo]["stock"])
+        st.error("No se pudo guardar los productos en el archivo.")
 
 
 def guardar_venta(venta):
-
     try:
-
         with open(archivo_ven, "a") as archivo:
-
             archivo.write(str(venta["codigo"]) + "\n")
             archivo.write(venta["producto"] + "\n")
             archivo.write(str(venta["cantidad"]) + "\n")
             archivo.write(str(venta["descuento"]) + "\n")
             archivo.write(str(venta["total"]) + "\n")
-
     except OSError:
+        st.error("No se pudo guardar la venta.")
 
-        print("No se pudo guardar la venta.")
 
+# --- INTERFAZ WEB CON STREAMLIT ---
+st.set_page_config(page_title="Sistema de Ventas", layout="centered")
+preparar_archivos()
 
-def vender(inventario, ventas):
+# Cargar datos en cada recarga
+if "inventario" not in st.session_state:
+    st.session_state.inventario = leer_inventario()
+if "ventas" not in st.session_state:
+    st.session_state.ventas = leer_ventas()
 
-    print("\nREGISTRAR VENTA")
+st.title("🏪 Sistema de Gestión de Ventas")
 
-    try:
+# Menú lateral para cambiar de función
+menu = [
+    "Agregar Producto",
+    "Buscar Producto",
+    "Modificar Producto",
+    "Realizar Venta",
+    "Ver Inventario",
+    "Ver Reporte",
+]
+opcion = st.sidebar.selectbox("Selecciona una opción del menú", menu)
 
-        codigo = int(input("Código del producto: ").strip())
+# 1. AGREGAR PRODUCTO
+if opcion == "Agregar Producto":
+    st.header("📝 Registro de Producto")
+    with st.form("form_agregar", clear_on_submit=True):
+        codigo = st.number_input("Código:", min_value=1, step=1)
+        nombre = st.text_input("Nombre del producto:")
+        precio = st.number_input(
+            "Precio (S/.):", min_value=0.0, format="%.2f", step=0.5
+        )
+        stock = st.number_input("Cantidad disponible (Stock):", min_value=0, step=1)
+        boton_guardar = st.form_submit_button("Guardar Producto")
 
-        if codigo not in inventario:
-
-            print("El producto no existe.")
-
-        else:
-
-            producto = inventario[codigo]
-
-            print("Producto:", producto["nombre"])
-            print("Precio:", producto["precio"])
-            print("Disponible:", producto["stock"])
-
-            cantidad = int(input("Cantidad a vender: ").strip())
-
-            if cantidad <= 0:
-
-                print("Cantidad incorrecta.")
-
-            elif cantidad > producto["stock"]:
-
-                print("No existe suficiente stock.")
-
+        if boton_guardar:
+            if nombre.strip() == "":
+                st.warning("Debe colocar un nombre válido.")
+            elif codigo in st.session_state.inventario:
+                st.error("❌ Ese código ya existe en el sistema.")
             else:
+                st.session_state.inventario[codigo] = {
+                    "nombre": nombre.strip().capitalize(),
+                    "precio": precio,
+                    "stock": stock,
+                }
+                guardar_inventario(st.session_state.inventario)
+                st.success(
+                    f"✅ Producto '{nombre.capitalize()}' guardado con éxito."
+                )
 
-                descuento = float(input("Descuento (%): ").strip())
+# 2. BUSCAR PRODUCTO
+elif opcion == "Buscar Producto":
+    st.header("🔍 Búsqueda de Producto")
+    codigo_buscar = st.number_input(
+        "Ingrese el código a buscar:", min_value=1, step=1
+    )
+    if st.button("Buscar"):
+        if codigo_buscar in st.session_state.inventario:
+            prod = st.session_state.inventario[codigo_buscar]
+            st.info(f"**Código:** {codigo_buscar}")
+            st.write(f"**Nombre:** {prod['nombre']}")
+            st.write(f"**Precio:** S/. {prod['precio']:.2f}")
+            st.write(f"**Stock disponible:** {prod['stock']} unidades")
+        else:
+            st.error("❌ No se encontró ningún producto con ese código.")
 
-                if descuento < 0 or descuento > 100:
+# 3. MODIFICAR PRODUCTO
+elif opcion == "Modificar Producto":
+    st.header("✏️ Modificar Producto")
+    codigo_mod = st.number_input(
+        "Código del producto a modificar:", min_value=1, step=1
+    )
 
-                    print("Descuento incorrecto.")
+    if codigo_mod in st.session_state.inventario:
+        prod_act = st.session_state.inventario[codigo_mod]
+        st.write(f"Modificando actual: **{prod_act['nombre']}**")
 
+        with st.form("form_modificar"):
+            nuevo_nombre = st.text_input(
+                "Nuevo nombre:", value=prod_act["nombre"]
+            )
+            nuevo_precio = st.number_input(
+                "Nuevo precio (S/.):", min_value=0.0, value=prod_act["precio"]
+            )
+            nuevo_stock = st.number_input(
+                "Nuevo stock:", min_value=0, value=prod_act["stock"]
+            )
+            boton_modificar = st.form_submit_button("Actualizar")
+
+            if boton_modificar:
+                if nuevo_nombre.strip() == "":
+                    st.error("El nombre no puede quedar vacío.")
                 else:
+                    st.session_state.inventario[codigo_mod] = {
+                        "nombre": nuevo_nombre.strip().capitalize(),
+                        "precio": nuevo_precio,
+                        "stock": nuevo_stock,
+                    }
+                    guardar_inventario(st.session_state.inventario)
+                    st.success("✅ Producto actualizado correctamente.")
+    else:
+        st.caption("Introduce un código válido existente para editarlo.")
 
-                    subtotal = producto["precio"] * cantidad
+# 4. REALIZAR VENTA
+elif opcion == "Realizar Venta":
+    st.header("💰 Registrar Nueva Venta")
+    codigo_vender = st.number_input(
+        "Código del producto a vender:", min_value=1, step=1
+    )
 
-                    rebaja = subtotal * descuento / 100
+    if codigo_vender in st.session_state.inventario:
+        prod = st.session_state.inventario[codigo_vender]
+        st.write(f"🛒 **Producto:** {prod['nombre']} | Precio: S/. {prod['precio']:.2f} | Stock: {prod['stock']}")
 
-                    total = subtotal - rebaja
-
-                    print("Subtotal: S/.", subtotal)
-                    print("Descuento: S/.", rebaja)
-                    print("Total: S/.", total)
-
-                    respuesta = input(
-                        "¿Realizar venta? (si/no): "
-                    ).lower().strip()
-
-                    if respuesta == "si":
-
-                        producto["stock"] = producto["stock"] - cantidad
-
-                        venta = {
-                            "codigo": codigo,
-                            "producto": producto["nombre"],
-                            "cantidad": cantidad,
-                            "descuento": descuento,
-                            "total": total
-                        }
-
-                        ventas.append(venta)
-
-                        guardar_inventario(inventario)
-
-                        guardar_venta(venta)
-
-                        print("Venta realizada.")
-
-                    else:
-
-                        print("Venta anulada.")
-
-    except ValueError:
-
-        print("Ingrese valores válidos.")
-
-
-def reporte(inventario, ventas):
-
-    print("\nREPORTE")
-
-    cantidad_productos = len(inventario)
-
-    unidades = 0
-    valor_stock = 0
-
-    for codigo in inventario:
-
-        unidades += inventario[codigo]["stock"]
-
-        valor_stock += (
-            inventario[codigo]["precio"]
-            * inventario[codigo]["stock"]
+        cantidad = st.number_input("Cantidad a vender:", min_value=1, step=1)
+        descuento = st.number_input(
+            "Descuento (%):", min_value=0.0, max_value=100.0, step=1.0
         )
 
-    dinero_ventas = 0
+        subtotal = prod["precio"] * cantidad
+        rebaja = subtotal * (descuento / 100)
+        total = subtotal - rebaja
 
-    for venta in ventas:
+        st.markdown(f"**Subtotal:** S/. {subtotal:.2f}")
+        st.markdown(f"**Descuento aplicado:** S/. {rebaja:.2f}")
+        st.markdown(f"### **Total a Pagar:** S/. {total:.2f}")
 
-        dinero_ventas += venta["total"]
-
-    print("Tipos de productos:", cantidad_productos)
-    print("Unidades en almacén:", unidades)
-    print("Valor del stock: S/.", valor_stock)
-    print("Ventas realizadas:", len(ventas))
-    print("Total vendido: S/.", dinero_ventas)
-
-
-def menu_principal():
-
-    preparar_archivos()
-
-    inventario = leer_inventario()
-
-    ventas = leer_ventas()
-
-    opcion = ""
-
-    while opcion != "7":
-
-        print("\n==========================")
-        print(" SISTEMA DE VENTAS")
-        print("==========================")
-        print("1. Agregar producto")
-        print("2. Buscar producto")
-        print("3. Modificar producto")
-        print("4. Realizar venta")
-        print("5. Ver productos")
-        print("6. Ver reporte")
-        print("7. Finalizar")
-
-        opcion = input("Opción: ").strip()
-
-        if opcion == "1":
-
-            registrar_producto(inventario)
-
-        elif opcion == "2":
-
-            buscar_producto(inventario)
-
-        elif opcion == "3":
-
-            modificar_producto(inventario)
-
-        elif opcion == "4":
-
-            vender(inventario, ventas)
-
-        elif opcion == "5":
-
-            mostrar_productos(inventario)
-
-        elif opcion == "6":
-
-            reporte(inventario, ventas)
-
-        elif opcion == "7":
-
-            guardar_inventario(inventario)
-
-            print("Cerrando sistema...")
-
+        if cantidad > prod["stock"]:
+            st.error("❌ No hay suficiente stock disponible.")
         else:
+            if st.button("Confirmar y Procesar Venta"):
+                st.session_state.inventario[codigo_vender]["stock"] -= cantidad
+                nueva_venta = {
+                    "codigo": codigo_vender,
+                    "producto": prod["nombre"],
+                    "cantidad": cantidad,
+                    "descuento": descuento,
+                    "total": total,
+                }
+                st.session_state.ventas.append(nueva_venta)
 
-            print("Opción no válida.")
+                guardar_inventario(st.session_state.inventario)
+                guardar_venta(nueva_venta)
+                st.success("🎉 ¡Venta realizada con éxito!")
+                st.rerun()
+    else:
+        st.caption("Escribe el código de un producto existente.")
 
+# 5. VER INVENTARIO
+elif opcion == "Ver Inventario":
+    st.header("📋 Lista Completa de Productos")
+    if len(st.session_state.inventario) == 0:
+        st.info("No hay productos registrados en el inventario.")
+    else:
+        tabla_datos = []
+        for cod, datos in st.session_state.inventario.items():
+            tabla_datos.append(
+                {
+                    "Código": cod,
+                    "Nombre": datos["nombre"],
+                    "Precio": f"S/. {datos['precio']:.2f}",
+                    "Stock": datos["stock"],
+                }
+            )
+        st.dataframe(tabla_datos, use_container_width=True)
 
-menu_principal()
+# 6. VER REPORTE
+elif opcion == "Ver Reporte":
+    st.header("📊 Reporte General del Negocio")
+
+    tipos_productos = len(st.session_state.inventario)
+    unidades_totales = sum(
+        p["stock"] for p in st.session_state.inventario.values()
+    )
+    valor_total_stock = sum(
+        p["precio"] * p["stock"] for p in st.session_state.inventario.values()
+    )
+    total_dinero_ventas = sum(v["total"] for v in st.session_state.ventas)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Tipos de Productos", tipos_productos)
+        st.metric("Unidades en Almacén", unidades_totales)
+    with col2:
+        st.metric("Valor del Stock", f"S/. {valor_total_stock:.2f}")
+        st.metric("Total Vendido", f"S/. {total_dinero_ventas:.2f}")
+
+Usa el código con precaución.st.subheader("Historial de Transacciones")if len(st.session_state.ventas) == 0:st.caption("Aún no se registran ventas en el sistema.")else:st.dataframe(st.session_state.ventas, use_container_width=True)
